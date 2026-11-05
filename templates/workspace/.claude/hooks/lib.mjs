@@ -10,14 +10,34 @@
 // SESSION's project root only.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const SPECWRIGHT_VERSION = '2.0.0';
 export const IS_WINDOWS = process.platform === 'win32';
 
-export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
+/**
+ * The real, canonical spelling of a path: symlinks resolved (macOS /var is
+ * /private/var), Windows short names expanded (RUNNER~1), separators native.
+ * Works for paths that do not exist yet by resolving the nearest existing
+ * ancestor. Git and Node otherwise spell the same folder differently, and a
+ * plain string compare then says it is two places.
+ */
+export function real(p) {
+  let head = resolve(p);
+  const tail = [];
+  while (!existsSync(head)) {
+    const up = dirname(head);
+    if (up === head) return resolve(p);
+    tail.unshift(basename(head));
+    head = up;
+  }
+  try { head = realpathSync.native(head); } catch { /* keep resolved */ }
+  return join(head, ...tail);
+}
+
+export const ROOT = real(resolve(dirname(fileURLToPath(import.meta.url)), '..', '..'));
 export const CONFIG_FILE = join(ROOT, '.claude', 'specwright.ini');
 export const STATE_DIR = join(ROOT, '.claude', '.specwright');
 
@@ -83,19 +103,22 @@ export function loadConfig(root = ROOT) {
   const cfg = existsSync(file)
     ? parseConfig(readFileSync(file, 'utf8'))
     : { project: {}, units: [], gate: [], problems: ['no .claude/specwright.ini'] };
-  cfg.root = root;
+  cfg.root = real(root);
   cfg.units = cfg.units
     .filter((u) => u.path)
     .map((u) => ({
       ...u,
-      dir: resolve(root, u.path),
+      dir: real(resolve(root, u.path)),
       exts: (u.exts || '').split(/[\s,]+/).filter(Boolean).map((e) => e.replace(/^\./, '').toLowerCase()),
     }));
   return cfg;
 }
 
 /** Compare paths the way the file system does: case-insensitive on Windows. */
-const norm = (p) => (IS_WINDOWS ? resolve(p).toLowerCase() : resolve(p));
+const norm = (p) => (IS_WINDOWS ? real(p).toLowerCase() : real(p));
+
+/** True when two paths name the same place. */
+export const samePath = (a, b) => norm(a) === norm(b);
 
 export function isInside(file, dir) {
   const rel = relative(norm(dir), norm(file));
@@ -121,7 +144,7 @@ export function gitRoots(cfg) {
   for (const u of cfg.units) {
     if (!existsSync(u.dir)) continue;
     const top = git(u.dir, ['rev-parse', '--show-toplevel']);
-    if (top) roots.set(norm(top), resolve(top));
+    if (top) roots.set(norm(top), real(top));
   }
   return [...roots.values()];
 }

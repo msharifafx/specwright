@@ -2,7 +2,7 @@
 // Remove a feature worktree set created by feature-start.mjs.
 // Never forces: git refuses a dirty worktree, and uncommitted work is a reason
 // to stop, not to delete. Branches live in the main checkout and SURVIVE.
-import { git, gitRoots, loadConfig } from '../.claude/hooks/lib.mjs';
+import { git, gitRoots, loadConfig, samePath } from '../.claude/hooks/lib.mjs';
 import { existsSync, rmSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
@@ -23,8 +23,8 @@ const remove = (repo, target) => {
     console.error(`  refused: ${target} has uncommitted or untracked work. Commit or stash it, then run again.`);
   }
 };
-for (const r of roots) if (resolve(r) !== resolve(ROOT)) remove(r, join(wt, relative(ROOT, r)));
-if (roots.some((r) => resolve(r) === resolve(ROOT))) remove(ROOT, wt);
+for (const r of roots) if (!samePath(r, ROOT)) remove(r, join(wt, relative(ROOT, r)));
+if (roots.some((r) => samePath(r, ROOT))) remove(ROOT, wt);
 if (!ok) process.exit(1);
 rmSync(wt, { recursive: true, force: true });
 for (const r of roots) git(r, ['worktree', 'prune']);

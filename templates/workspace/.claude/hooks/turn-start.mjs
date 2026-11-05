@@ -3,6 +3,7 @@
 // the turn — not only what is still uncommitted. Writes nothing to git;
 // state lives in .claude/.specwright/ (self-ignoring).
 import { STATE_DIR, git, gitRoots, loadConfig } from './lib.mjs';
+// Keys are canonical paths (lib.real), so gate.mjs can match them on any OS.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 

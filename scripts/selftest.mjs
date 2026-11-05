@@ -6,20 +6,24 @@
 // its temp directory. CI runs it on all three.
 import { spawnSync } from 'node:child_process';
 import {
-  cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const SKILL = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const T = mkdtempSync(join(tmpdir(), 'specwright-'));
+// realpath: macOS tmpdir is a symlink, Windows may hand out 8.3 short names.
+const T = realpathSync.native(mkdtempSync(join(tmpdir(), 'specwright-')));
 const NODE = JSON.stringify(process.execPath); // quoted: may contain spaces on Windows
 let pass = 0, fail = 0;
 const check = (name, ok) => { console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${name}`); ok ? pass++ : fail++; };
 const write = (p, s) => { mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, s); };
 const ENV = { ...process.env, GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@t', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@t' };
-const git = (cwd, ...a) => spawnSync('git', a, { cwd, encoding: 'utf8', env: ENV });
+const git = (cwd, ...a) => {
+  const r = spawnSync('git', a, { cwd, encoding: 'utf8', env: ENV });
+  return { ...r, stdout: r.stdout ?? '' }; // a missing cwd must fail a check, not crash the run
+};
 const node = (script, args = [], opts = {}) => spawnSync(process.execPath, [script, ...args], { encoding: 'utf8', env: ENV, ...opts });
 const hook = (root, name, payload) => node(join(root, '.claude', 'hooks', `${name}.mjs`), [], { input: JSON.stringify(payload), cwd: root });
 const script = (root, name, ...a) => node(join(root, 'scripts', `${name}.mjs`), a, { cwd: root });
@@ -131,7 +135,7 @@ try {
   check('says NOT linted (exit 2) when the linter is absent', r.status === 2 && r.stderr.includes('NOT linted'));
 
   console.log('== config parsing');
-  const lib = await import(new URL(`file://${join(SKILL, 'templates', 'workspace', '.claude', 'hooks', 'lib.mjs').replace(/\\/g, '/').replace(/^([A-Za-z]):/, '/$1:')}`).href);
+  const lib = await import(pathToFileURL(join(SKILL, 'templates', 'workspace', '.claude', 'hooks', 'lib.mjs')).href);
   const parsed = lib.parseConfig('[project]\nproduct = X\n\n[unit a]\npath = .\ntypcheck = tsc\nlint = a | b && c = d\n');
   check('a typo in a key is reported, not ignored', parsed.problems.some((p) => p.includes('typcheck')));
   check('values keep pipes, && and =', parsed.units[0].lint === 'a | b && c = d');

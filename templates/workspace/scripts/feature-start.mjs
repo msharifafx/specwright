@@ -11,7 +11,7 @@
 // WHY A WORKTREE PER FEATURE. Several sessions (people or agents) work at once.
 // In a shared checkout one session's `git add -A` commits another's
 // half-finished files, and a branch switch moves the floor under everyone.
-import { git, gitRoots, isInside, loadConfig, sh } from '../.claude/hooks/lib.mjs';
+import { git, gitRoots, isInside, loadConfig, samePath, sh } from '../.claude/hooks/lib.mjs';
 import { cpSync, existsSync, mkdirSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 
@@ -42,9 +42,9 @@ function addWorktree(repo, target) {
   console.log(`worktree: ${target}  (${branch} from ${base})`);
 }
 
-const rootIsRepo = roots.some((r) => resolve(r) === resolve(ROOT));
+const rootIsRepo = roots.some((r) => samePath(r, ROOT));
 if (rootIsRepo) addWorktree(ROOT, dest); else mkdirSync(dest, { recursive: true });
-for (const r of roots) if (resolve(r) !== resolve(ROOT)) addWorktree(r, join(dest, relative(ROOT, r)));
+for (const r of roots) if (!samePath(r, ROOT)) addWorktree(r, join(dest, relative(ROOT, r)));
 
 // Instructions and hooks that git does not track do not arrive with a
 // worktree. Copy them without overwriting tracked copies.

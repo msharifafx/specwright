@@ -7,14 +7,14 @@
 // Exit 2 puts stderr in front of the agent (for PostToolUse the edit has
 // already happened; this is feedback, not a veto). Exit 0 with no output when
 // the file is clean, so a clean edit costs nothing.
-import { commandMissing, head, loadConfig, quote, readStdinJson, sh, unitFor } from './lib.mjs';
+import { commandMissing, head, loadConfig, quote, readStdinJson, real, sh, unitFor } from './lib.mjs';
 import { existsSync } from 'node:fs';
 import { extname, isAbsolute, resolve } from 'node:path';
 
 const input = await readStdinJson();
 const given = input.tool_input?.file_path;
 if (!given) process.exit(0);
-const file = isAbsolute(given) ? given : resolve(input.cwd || process.cwd(), given);
+const file = real(isAbsolute(given) ? given : resolve(input.cwd || process.cwd(), given));
 if (!existsSync(file)) process.exit(0);
 
 const cfg = loadConfig();

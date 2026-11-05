@@ -5,7 +5,7 @@
 // that repo's .claude/. Idempotent. Single repos and monorepos do not need it.
 //
 //   node scripts/bootstrap.mjs
-import { git, loadConfig, sh } from '../.claude/hooks/lib.mjs';
+import { git, loadConfig, samePath, sh } from '../.claude/hooks/lib.mjs';
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 
@@ -15,7 +15,7 @@ const base = process.env.SPECWRIGHT_GIT_BASE || cfg.project.git_base;
 const projectBlock = readFileSync(join(ROOT, '.claude', 'specwright.ini'), 'utf8').split(/^\[unit /m)[0].replace(/\n\[gate\][\s\S]*/, '');
 
 for (const u of cfg.units) {
-  if (resolve(u.dir) === resolve(ROOT)) continue;
+  if (samePath(u.dir, ROOT)) continue;
   if (!existsSync(u.dir)) {
     if (!base) { console.log(`${u.name}: missing and git_base is unset in specwright.ini`); continue; }
     if (git(ROOT, ['clone', `${base}/${basename(u.dir)}.git`, u.dir]) === null) { console.error(`${u.name}: clone failed`); continue; }

@@ -11,7 +11,7 @@
 //    without the check it re-fires forever.
 //  * A typecheck that runs past its budget BLOCKS with a message rather than
 //    passing silently: a slow check must be made incremental, not skipped.
-import { STATE_DIR, git, head, loadConfig, readStdinJson, relPath, sh } from './lib.mjs';
+import { STATE_DIR, git, head, loadConfig, readStdinJson, relPath, samePath, sh } from './lib.mjs';
 import { existsSync, readFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 
@@ -29,7 +29,7 @@ function touchedFiles(unit) {
   const files = [];
   const status = git(unit.dir, ['status', '--porcelain', '--untracked-files=all', '--', '.']) || '';
   for (const l of status.split('\n')) if (l.length > 3) files.push(l.slice(3).replace(/^.* -> /, '').replace(/^"|"$/g, ''));
-  const was = Object.entries(start).find(([k]) => k.toLowerCase() === top.toLowerCase())?.[1];
+  const was = Object.entries(start).find(([k]) => samePath(k, top))?.[1];
   const now = git(unit.dir, ['rev-parse', 'HEAD']);
   if (was && now && was !== now) {
     const committed = git(unit.dir, ['diff', '--name-only', `${was}..${now}`, '--', '.']) || '';
