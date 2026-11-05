@@ -1,0 +1,47 @@
+# __PRODUCT__ — __REPO_ROLE__
+
+__ONE_PARAGRAPH__
+
+This file is the contract for every session in this repo. Each rule below
+guards a failure that is **silent until production**. Read the linked doc
+before relaxing one. (This file is self-contained: the repo is also cloned
+alone, so it repeats the architecture it needs.)
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+__STACK_TABLE__
+
+## Hard rules
+
+<!-- Group by topic. Each heading links its long doc. Each rule: one line,
+     plus why. A rule a tool can enforce goes in the linter too. -->
+
+### __TOPIC__ — `docs/__topic__.md`
+
+- **__RULE__** — __WHY__
+
+## Conventions — `docs/conventions.md`
+
+- __CONVENTION__
+
+## How these rules are enforced
+
+| Layer | What it does |
+|---|---|
+| `PostToolUse` hook | Lints every file the moment it is written |
+| `.claude/rules/*.md` | Path-scoped detail that loads when matching files are touched |
+| `Stop` hook | Blocks the turn from ending while typecheck fails |
+| `__GATE_CMD__` | The PR gate; CI runs the same script |
+
+What no hook enforces: the load test, the leak probe, running the feature
+yourself, and judgement about cost. Those live in `docs/feature-workflow.md`.
+
+## Working agreement
+
+- Run `__GATE_CMD__` before declaring work done. Do not disable either hook.
+- Never add a lint-disable for a hard rule. If a rule is wrong, change the
+  rule and its doc together, in the same PR, with the reason.
+- When a rule conflicts with what you were about to write, the rule wins. Say
+  so and propose the change rather than working around it.

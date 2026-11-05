@@ -1,0 +1,23 @@
+# Hotfix propagation chain, most-stable FIRST.
+#
+# THIS FILE DOES NOTHING. Copy it to .claude/hotfix-chain to arm the hook, and
+# set the order below to the one you actually want first.
+#
+# .claude/hooks/hotfix.sh merges each branch into the next one down, but only
+# commits whose subject starts with `hotfix:` / `hotfix(scope):` / `hotfix!:`.
+# A fix made on release therefore reaches every branch below it without being
+# cherry-picked, and nothing else moves.
+#
+# Missing branches are skipped silently, so an armed chain stays quiet until the
+# branches below actually exist. Edit the order to match your model; delete the
+# file to switch the hook off entirely.
+#
+# NOTE: server-app-workspace/docs/cicd.md documents artifact PROMOTION — one
+# merge to main, one image walking dev → uat → prod. A branch per
+# environment is a different model. Settle that doc before pushing any of these
+# branches, or the pipeline and the branches will disagree about what is
+# deployed where.
+
+release
+uat
+master

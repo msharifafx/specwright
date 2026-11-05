@@ -1,0 +1,16 @@
+# Hotfix propagation chain, most-stable FIRST. THIS FILE DOES NOTHING.
+# Copy it to .claude/hotfix-chain in a repo to arm .claude/hooks/hotfix.sh there.
+#
+# The hook merges each branch into the next one down, but only commits whose
+# subject starts with `hotfix:` / `hotfix(scope):` / `hotfix!:`. A fix made on
+# release reaches every branch below it without a cherry-pick, and nothing
+# else moves. Local only: it never fetches, pushes or deploys.
+#
+# DECIDE FIRST: a branch per environment is one deployment model; promoting one
+# immutable artifact dev → uat → prod from a single main branch is another.
+# If your CI promotes artifacts, do NOT arm this — the two would disagree about
+# what is deployed where.
+
+release
+uat
+main

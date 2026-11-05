@@ -1,0 +1,81 @@
+# __PRODUCT__ — workspace
+
+<!-- Read on EVERY session. Keep each rule to a line or two and link to the
+     longer doc. Judgement and invariants live here; formatting does not —
+     the formatter owns that. -->
+
+__LAYOUT_PARAGRAPH__
+<!-- One of, filled from discovery:
+  Single repo:  "One repository. Sessions start at its root."
+  Monorepo:     "One repository with N units (packages/services). Sessions
+                 start at the root; features usually span units."
+  Workspace:    "N git repositories. This directory is the workspace; the
+                 repos are cloned inside it and gitignored here (not
+                 submodules). Sessions start here — features span the repos." -->
+
+| Unit | Path | What | Stack |
+|---|---|---|---|
+__UNIT_TABLE__
+
+## How rules and hooks reach a session
+
+- **CLAUDE.md**: ancestors load at launch; a subdirectory `CLAUDE.md` loads
+  when the agent first reads a file in that subtree. Not re-injected after
+  `/compact` until a file there is read again.
+- **`.claude/settings.json`** is read from the session's project root ONLY.
+  So an identical copy of `.claude/hooks/` sits here and in every repo, and
+  each hook finds the owning repo itself.
+- **`.claude/harness.conf`** names the repos and commands. Hooks read it; edit
+  it, never the hooks.
+
+## The shape, in one paragraph
+
+__SHAPE__
+
+## What the product must do
+
+Requirements live in **`docs/requirements/`**: the untouched sources in
+`sources/`, and the queryable extract next to them. Start every feature there.
+
+- Only **stated** requirements bind. Inferred links are leads to verify.
+- **Domain vs design**: the requirements say WHAT a screen does; the prototype
+  says what it LOOKS like. Read the prototype's markup for the screen you build.
+- Where requirements and build docs disagree about *what the product does*, the
+  requirements win. About *how it is built*, the build docs win.
+- Unresolved contradictions are in `docs/open-questions.md`. Do not build on
+  one that is open — ask.
+
+## Invariants — never broken, whatever a requirement says
+
+__INVARIANTS__
+
+## Every feature follows the workflow
+
+`__DOCS_DIR__/feature-workflow.md`. **No "small change" exemption.**
+
+1. Worktree per feature: `./scripts/feature-start.sh <name>`.
+2. Both halves — a backend with no UI is half a feature.
+3. Requirements and prototype before designing.
+4. The case first (`__CASES_DIR__`), the script follows.
+5. `__GATE_CMD__` before every PR — identical to CI.
+6. Run what you built: curl the API, drive the screen in a browser.
+7. Indexes, caching and query cost decided during the feature.
+8. Record what you learned (memory) and what you deferred (decision log).
+
+## Decisions and questions
+
+- `docs/deferred-decisions.md` — what is deliberately not built, and why.
+- `docs/open-questions.md` — contradictions and gaps awaiting an answer.
+Check both before designing anything that touches roles, approvals or money.
+
+## Working with other sessions
+
+- Stage by path, never `git add -A` in a shared checkout.
+- The supervisor (a person) owns commits, merges, pushes and migrations.
+- Stop every server and container YOUR session started; kill by listening
+  pid after checking `/proc/<pid>/cwd` is your checkout. Never an unscoped
+  `pkill -f`.
+
+## Local environment
+
+__LOCAL_ENV__

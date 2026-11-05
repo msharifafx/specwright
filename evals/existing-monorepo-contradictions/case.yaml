@@ -1,0 +1,2 @@
+name: existing-monorepo-contradictions
+description: An existing pnpm + uv monorepo with planted contradictions. A good result discovers before acting, logs every planted contradiction with both sides quoted, asks with recommendations, and installs nothing.

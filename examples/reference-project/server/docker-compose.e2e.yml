@@ -1,0 +1,152 @@
+# A COMPLETELY ISOLATED stack, for end-to-end runs that must not touch the
+# shared local one.
+#
+#   pnpm e2e:up       bring it up, migrate, seed  (idempotent)
+#   pnpm e2e:verify   prove it is actually serving
+#   pnpm e2e:down     destroy it, volumes included
+#
+# WHY THIS EXISTS. `docker-compose.yml` is one stack shared by every worktree,
+# and that sharing has bitten this project three separate ways: a migration
+# applied from one branch leaves another reporting index drift against a
+# database it never migrated; another branch's worker long-polls the same SQS
+# queue and eats jobs an e2e run was waiting for; and a poisoned Valkey config
+# entry outlives the branch that wrote it. None of those are visible as
+# failures — they look like flaky tests.
+#
+# Everything here is therefore separate: its own compose PROJECT (so its own
+# network, containers and volumes), its own ports, its own bucket, its own
+# queues. Nothing is shared with `docker-compose.yml` except the read-only
+# config files under ./local, which are network-internal and identical in both.
+#
+# PORTS ARE THE SHARED STACK'S +100. The shared stack owns 5xx32/5xx79/59xxx;
+# this one sits directly above it so a port collision means the shared stack is
+# up, not that some unrelated service took the slot.
+# THE PROJECT NAME AND EVERY HOST PORT ARE OVERRIDABLE, and that is the point.
+#
+# "Isolated from the shared stack" turned out not to mean "isolated" — several
+# Claude sessions work in this repo at once, more than one of them points at
+# THIS stack, and their workers long-poll the same queue. A message vanishes
+# into another branch's worker that has no handler for it, and the symptom is a
+# job that never runs. Exactly the failure this file's header describes, one
+# level up.
+#
+# So a session that wants a stack of its own sets two variables and gets one:
+#
+#   E2E_PROJECT=app-myfeature E2E_PORT_OFFSET=200 pnpm e2e:up
+#
+# `scripts/e2e-up.sh` derives every port below from the offset and writes the
+# matching env file, so the two cannot drift apart.
+name: ${E2E_PROJECT:-app-e2e}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_HOST_AUTH_METHOD: md5
+      POSTGRES_INITDB_ARGS: '--auth-host=md5'
+    ports:
+      - '${E2E_PG_PORT:-55532}:5432'
+    volumes:
+      - ./local/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - e2epgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+  # Present, and used, for the same reason as in the shared stack: developing
+  # against a direct connection hides every transaction-mode violation until
+  # staging. An e2e run that bypassed the pooler would prove less than the
+  # shared stack does, which would defeat the point of having one.
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '${E2E_PGB_PORT:-56532}:6432'
+    volumes:
+      - ./local/pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./local/pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 6432 || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ['valkey-server', '--save', '', '--appendonly', 'no']
+    ports:
+      - '${E2E_VALKEY_PORT:-56479}:6379'
+    healthcheck:
+      test: ['CMD', 'valkey-cli', 'ping']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+  # Its own queues, which is the whole point: a worker started from another
+  # worktree polls the SHARED stack's queues and will happily consume a message
+  # this run enqueued. Fair-queue behaviour is still not emulated — that is
+  # server-side AWS and is verified in uat only.
+  sqs:
+    image: softwaremill/elasticmq-native:latest
+    ports:
+      - '${E2E_SQS_PORT:-59424}:9324'
+      - '${E2E_SQS_UI_PORT:-59425}:9325'
+    volumes:
+      - ./local/elasticmq/elasticmq.conf:/opt/elasticmq.conf:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:9324/?Action=ListQueues || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+  s3:
+    image: minio/minio:latest
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '${E2E_S3_PORT:-59100}:9000'
+      - '${E2E_S3_UI_PORT:-59101}:9001'
+    healthcheck:
+      test: ['CMD-SHELL', 'mc ready local || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+  s3-init:
+    image: minio/mc:latest
+    depends_on:
+      s3:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://s3:9000 minioadmin minioadmin &&
+      mc mb --ignore-existing local/app-e2e-files &&
+      echo 'bucket app-e2e-files ready'
+      "
+    restart: 'no'
+
+  mail:
+    image: axllent/mailpit:latest
+    ports:
+      - '${E2E_SMTP_PORT:-51125}:1025'
+      - '${E2E_MAIL_UI_PORT:-58125}:8025'
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: '1'
+      MP_SMTP_AUTH_ALLOW_INSECURE: '1'
+    healthcheck:
+      test: ['CMD-SHELL', 'nc -z 127.0.0.1 1025 || exit 1']
+      interval: 3s
+      timeout: 5s
+      retries: 25
+
+volumes:
+  e2epgdata:
