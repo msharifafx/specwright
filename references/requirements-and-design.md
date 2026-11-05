@@ -12,33 +12,55 @@
 
 ## 1. Keep the sources untouched
 
-Put every requirement source in `REQUIREMENTS_DIR/sources/` exactly as
-received: BRDs, PRDs, the clickable prototype, design exports, signed-off
+Keep every requirement source in `requirements_dir` exactly as received — in
+an existing project, wherever the sources already live (never move them); in
+a new one, `docs/requirements/sources/`: BRDs, PRDs, the clickable prototype, design exports, signed-off
 emails and meeting notes that changed scope. Never rewrite them. If the
 client's product name differs from yours, it stays as-is inside the sources
 and the extract, so any quote can be checked against the original. Use your
 own name everywhere else.
 
-Record each source's version and date in `REQUIREMENTS_DIR/README.md`
+Record each source's version and date in `<requirements_dir>/README.md`
 (template: `templates/workspace/docs/README.requirements.md`). Two versions of
 one document is a supersession question for the interview.
 
-## 2. Make requirements queryable
+## 2. Make requirements queryable — graphify is required
 
-Best: a knowledge graph built from the sources. On the reference project the
-`graphify` skill turned five BRDs, a P&L BRD and the prototype into 481
-concepts and 1,041 relationships in 21 topic communities, with an HTML view
-and a wiki page per topic. Any equivalent works.
+Specwright builds the requirements into a knowledge graph with the
+[graphify](https://github.com/Graphify-Labs/graphify) skill. It is a
+**prerequisite**, not an option: without a graph, "ask the requirements" turns
+back into "remember the requirements", which is the failure this exists to
+prevent.
 
-Without a graph tool: a glossary file per area with, for each concept, its
-definition, its rules, and its relationships to other concepts. Slower to
-build, same discipline.
+Install once per machine (Python 3.10+):
+
+```
+uv tool install graphifyy          # or: pipx install graphifyy
+graphify install                    # Windows: graphify install --platform windows
+```
+
+If `graphify` is not on the PATH, or the `/graphify` skill is not available
+to the session, **stop setup and tell the user** with the commands above. If
+it is installed but cannot run on these sources, stop and ask — do not
+substitute a hand-written summary and carry on.
+
+Build the graph from the sources:
+
+```
+/graphify <requirements_dir>
+```
+
+It extracts concepts and relationships, clusters them into topics, and writes
+`graphify-out/` (an interactive HTML view, `graph.json`, and a report). On the
+reference project five BRDs and the clickable prototype became a graph whose
+topic pages are where every feature starts. Commit the output so the whole
+team queries the same graph; rebuild it when a source changes.
 
 Either way, **tag every relationship**:
 
 | Tag | Meaning | Binding? |
 |---|---|---|
-| STATED / EXTRACTED | The source says it; reference attached | Yes |
+| EXTRACTED (stated) | The source says it; reference attached | Yes |
 | INFERRED | Implied; a lead | No — verify against the source |
 | AMBIGUOUS | Readable two ways | No — it is an open question |
 
@@ -60,8 +82,9 @@ back. On the reference project this is how the cost sheet turned out to be a
 finalized one): a fact no single paragraph said, and that memory alone would
 have missed.
 
-After the feature, refresh the graph if the code graph is kept too (a stale
-graph makes the next feature's step 1 misleading).
+Rebuild the graph when a requirement source changes, and after a feature if
+the code is graphed too: a stale graph makes the next feature's first step
+misleading.
 
 ## 4. Design from the design source's markup
 

@@ -49,7 +49,7 @@ Multi-tenant SaaS for channel operations. Every tenant gets its own PostgreSQL d
 
 The requirements live in **[docs/domain-graph/](docs/domain-graph/)** — the client's BRDs
 (five, plus the P&L Dashboard BRD) and the clickable prototypes, extracted into a queryable
-graph of 481 concepts and 1,041 relationships.
+graph.
 
 Those documents call the product **the client product** (the client, authored by
 the vendor). We call it **the reference project**. Same product — the client's name is left

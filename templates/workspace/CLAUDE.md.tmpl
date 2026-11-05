@@ -23,10 +23,12 @@ __UNIT_TABLE__
   when the agent first reads a file in that subtree. Not re-injected after
   `/compact` until a file there is read again.
 - **`.claude/settings.json`** is read from the session's project root ONLY.
-  So an identical copy of `.claude/hooks/` sits here and in every repo, and
-  each hook finds the owning repo itself.
-- **`.claude/harness.conf`** names the repos and commands. Hooks read it; edit
-  it, never the hooks.
+  So an identical copy of `.claude/hooks/` sits here and in every separate
+  repo, and each hook finds the owning unit itself.
+- **`.claude/specwright.ini`** names the units, their commands, the gate steps
+  and every location. Hooks read it; edit it, never the hooks.
+- Hooks: lint findings on every edit come back to you — fix them before moving
+  on. The turn cannot end while typecheck fails in a unit you touched.
 
 ## The shape, in one paragraph
 
@@ -34,15 +36,16 @@ __SHAPE__
 
 ## What the product must do
 
-Requirements live in **`docs/requirements/`**: the untouched sources in
-`sources/`, and the queryable extract next to them. Start every feature there.
+Requirements live in **`__REQUIREMENTS_DIR__`**, untouched, with their
+graphify graph in `graphify-out/`. Start every feature with
+`/graphify query "<the area>"` — never from memory.
 
 - Only **stated** requirements bind. Inferred links are leads to verify.
 - **Domain vs design**: the requirements say WHAT a screen does; the prototype
   says what it LOOKS like. Read the prototype's markup for the screen you build.
 - Where requirements and build docs disagree about *what the product does*, the
   requirements win. About *how it is built*, the build docs win.
-- Unresolved contradictions are in `docs/open-questions.md`. Do not build on
+- Unresolved contradictions are in `__QUESTIONS_FILE__`. Do not build on
   one that is open — ask.
 
 ## Invariants — never broken, whatever a requirement says
@@ -53,28 +56,35 @@ __INVARIANTS__
 
 `__DOCS_DIR__/feature-workflow.md`. **No "small change" exemption.**
 
-1. Worktree per feature: `./scripts/feature-start.sh <name>`.
-2. Both halves — a backend with no UI is half a feature.
+1. Worktree per feature: `node scripts/feature-start.mjs <name>`.
+2. Every unit it touches — a backend with no UI is half a feature.
 3. Requirements and prototype before designing.
 4. The case first (`__CASES_DIR__`), the script follows.
-5. `__GATE_CMD__` before every PR — identical to CI.
+5. `node scripts/gate.mjs` before every PR — identical to CI.
 6. Run what you built: curl the API, drive the screen in a browser.
 7. Indexes, caching and query cost decided during the feature.
-8. Record what you learned (memory) and what you deferred (decision log).
+8. Record what you learned (a team lesson) and what you deferred (decision log).
 
 ## Decisions and questions
 
-- `docs/deferred-decisions.md` — what is deliberately not built, and why.
-- `docs/open-questions.md` — contradictions and gaps awaiting an answer.
+- `__DECISIONS_FILE__` — what is deliberately not built, and why.
+- `__QUESTIONS_FILE__` — contradictions and gaps awaiting an answer.
 Check both before designing anything that touches roles, approvals or money.
+
+## Lessons — traps this team has already paid for
+
+Read these before you start; add one whenever something costs real time
+(template: `__LESSONS_DIR__/_template.md`, one line in the index).
+
+@__LESSONS_DIR__/INDEX.md
 
 ## Working with other sessions
 
 - Stage by path, never `git add -A` in a shared checkout.
 - The supervisor (a person) owns commits, merges, pushes and migrations.
-- Stop every server and container YOUR session started; kill by listening
-  pid after checking `/proc/<pid>/cwd` is your checkout. Never an unscoped
-  `pkill -f`.
+- Stop every server and container YOUR session started; kill by the pid
+  listening on the port, after checking it is your checkout's. Never an
+  unscoped `pkill -f` or `taskkill /im`.
 
 ## Local environment
 

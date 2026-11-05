@@ -1,37 +1,28 @@
-# Examples: the reference project's real files
+# Examples
 
-Sanitised copies from the reference project (NestJS + Drizzle + PostgreSQL per tenant,
-React + TanStack, Playwright; three repos in one workspace). Read them for
-**shape** — how a rule is phrased, how a hook explains itself, how a gate is
-ordered. Do not copy their rules into another project: they encode that
-project's invariants (tenancy, connection budget, AWS) and stack.
+Fourteen real files from the multi-tenant platform Specwright was extracted
+from, with names removed. Each is here because it shows something the
+templates cannot: how a mature version reads after months of use.
 
-| File | Shows |
+Read them for **shape** — how a rule is phrased, how a script explains the
+failure it prevents. **Do not copy their rules** into another project: they
+encode that project's stack (NestJS, Drizzle, PostgreSQL per tenant, React,
+Playwright, AWS) and its invariants. The scripts are bash because that project
+ran on Linux only; Specwright's own scripts are Node and cross-platform.
+
+| File | Why it is here |
 |---|---|
-| `workspace/CLAUDE.md` | A root instructions file: repos, loading behaviour, domain graph, invariants, cases loop, workflow, enforcement layers, hotfixes, clean-up |
-| `workspace/README.md` | How the workspace is explained to a person |
-| `workspace/.claude/` | Original hooks (repo names hardcoded) and settings |
-| `workspace/scripts/` | Original feature-start/end and bootstrap |
-| `workspace/domain-graph-README.md` | How the requirements graph is introduced |
-| `workspace/deferred-decisions.excerpt.md` | The decision log's opening and first entries |
-| `server/CLAUDE.md` | A unit instructions file: stack table, hard rules by topic each linking a doc, enforcement, working agreement |
-| `server/eslint.config.mjs` | Architecture as lint errors, each ban explaining the failure it prevents |
-| `server/.claude/rules/` | Seven path-scoped rules: connections, database, DRY, jobs, observability, performance, storage/mail/i18n |
-| `server/docs/feature-workflow.md` | The full backend loop and PR checklist |
-| `server/scripts/gate.sh` | The PR gate CI runs verbatim |
-| `server/scripts/scan.sh` | A pinned scanner with a machine-wide cache and a clearable policy |
-| `server/scripts/ci/` | Migration-required and index-drift checks |
-| `server/scripts/gate-db.sh` | Database-backed checks kept out of the fast gate |
-| `server/scripts/verify-local.sh` | Verifying a local stack by behaviour |
-| `server/scripts/e2e-up.sh`, `server/docker-compose.e2e.yml` | One offset, every port: an isolated stack per session |
-| `server/scripts/leak-probe.sh` | Leak probe with RSS and object-count criteria |
-| `server/loadtest/multi-tenant.js` | Noisy-neighbour load test asserting on quiet tenants |
-| `web/CLAUDE.md`, `web/eslint.config.mjs` | The frontend counterparts, including design-system lint |
-| `web/.claude/rules/` | Six rules, including `prototype-fidelity.md` with extraction snippets |
-| `web/docs/feature-workflow.md` | Frontend loop: look at the screen, locator traps, bundle budget |
-| `web/scripts/gate.sh` | Generated-client freshness and bundle budgets |
-| `e2e/README.md`, `e2e/SETUP.md` | Introducing a browser suite to a tester, from nothing |
-| `e2e/cases/` | The cases contract and one real screen file |
-| `e2e/tools/` | The original cases check and coverage report |
-| `e2e/scripts/run-in-container.sh` | Judging results in the CI-shaped container |
-| `e2e/playwright.config.ts` | Suite configuration |
+| `workspace/CLAUDE.md` | A root instructions file at full size: repos, how rules load, where requirements live, invariants, the cases loop, the workflow, enforcement layers, clean-up |
+| `server/CLAUDE.md` | A unit instructions file: stack table, hard rules grouped by topic, each linking the doc that explains it |
+| `server/eslint.config.mjs` | Architecture as lint errors — boundaries, one door for dangerous handles, size limits, narrow DRY — each ban saying why |
+| `server/.claude/rules/database.md` | A path-scoped rule for the riskiest code: transactions, indexes, pagination |
+| `server/.claude/rules/jobs.md` | A short path-scoped rule: queues, idempotency, fairness |
+| `web/.claude/rules/prototype-fidelity.md` | How to build a screen from the prototype's markup, with extraction snippets |
+| `server/docs/feature-workflow.md` | The full feature loop and PR checklist as one team actually ran it |
+| `server/scripts/gate.sh` | A complete gate: lint, typecheck, tests, contract freshness, migration check, vulnerability scan |
+| `server/scripts/e2e-up.sh` | One port offset and one project name giving each session an isolated stack |
+| `server/loadtest/multi-tenant.js` | A load test that floods one tenant and asserts on the quiet ones |
+| `server/scripts/leak-probe.sh` | A leak probe judged on RSS growth and flat object counts |
+| `e2e/cases/README.md` | The cases contract a tester works from |
+| `e2e/cases/screens/masters-code-and-name.md` | A real case file: behaviour, never mechanism |
+| `workspace/deferred-decisions.excerpt.md` | The opening of a decision log and its first entries |

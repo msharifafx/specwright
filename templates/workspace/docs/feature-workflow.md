@@ -10,7 +10,7 @@ job and the screen that shows its result. Half a feature is not done.
 ## 0. Worktree
 
 ```bash
-./scripts/feature-start.sh <name>      # a worktree per repo, deps installed
+node scripts/feature-start.mjs <name>   # a worktree per repo, deps installed
 cd ../<prefix><name> && claude
 ```
 
@@ -18,13 +18,15 @@ Never develop on the default branch. Never reuse a worktree across features.
 
 ## 1. Clarify before designing
 
-1. Read the requirement from `<REQUIREMENTS_DIR>` — stated requirements only
-   bind; inferred ones are leads.
+1. Query the requirements graph for the area: `/graphify query "<area>"`,
+   `/graphify explain "<concept>"`. Extracted (stated) requirements bind;
+   inferred ones are leads to check against the source in
+   `<requirements_dir>`.
 2. Read the design source (prototype markup, design file) for every screen.
-3. Read `<DECISIONS_FILE>` and `<QUESTIONS_FILE>` for anything touching it.
+3. Read `<decisions_file>` and `<questions_file>` for anything touching it.
 4. **Look for contradictions** — requirement vs requirement, requirement vs
    design, requirement vs existing behaviour, requirement vs an invariant.
-   Each one goes into `<QUESTIONS_FILE>` with both sides quoted.
+   Each one goes into `<questions_file>` with both sides quoted.
 5. **Ask** the questions whose answer changes what gets built. Do not build
    on an open contradiction; build the parts it does not touch.
 
@@ -37,7 +39,7 @@ listed. Prefer extending an existing function over adding a parallel one.
 ## 3. Write the case first
 
 Anything a user would notice — a new screen, a changed refusal, a removed
-control — is a case in `<CASES_DIR>`, in plain English, before code. Removing
+control — is a case in `<cases_dir>`, in plain English, before code. Removing
 a feature starts by deleting its cases.
 
 ## 4. Design data access and cost first
@@ -87,7 +89,7 @@ permission) — one test proving it holds.
 ## 7. Gate
 
 ```bash
-<GATE_CMD>          # identical to CI
+node scripts/gate.mjs     # the [gate] steps; identical to CI
 ```
 
 ## 8. Run it yourself
@@ -105,14 +107,18 @@ a clipped dropdown, a misaligned form or a button that does nothing.
 - **Check you are hitting what you changed.** With several worktrees, the
   server on the usual port may be another branch's.
 
-## 9. Volume, load and leaks (when it applies)
+## 9. Volume, load and leaks
 
-- Performance at production volume, not fixture volume.
-- Load test where several users/tenants share resources: assert on the
-  QUIET ones while a noisy one floods.
-- Leak probe for anything long-lived: memory flat over a sustained run.
+- Performance at production volume, not fixture volume (every tier with
+  lists, imports or reports).
+- **(platform tier)** Load test where several users/tenants share resources:
+  assert on the QUIET ones while a noisy one floods (p95 < 500 ms).
+- **(platform tier)** Leak probe for anything long-lived: RSS growth under
+  50 MB over 10 minutes, flat counts of pools, sockets and listeners.
+- **(platform tier)** Run against your own isolated stack (project name +
+  port offset), never a stack another session's workers poll.
 
-## 9b. Observability
+## 9b. Observability (platform tier; recommended for standard)
 
 A feature that cannot be debugged in production is not finished.
 
@@ -125,8 +131,9 @@ A feature that cannot be debugged in production is not finished.
 ## 10. Finish
 
 1. Regression sweep: callers still hold; the full suite, not only new tests.
-2. Learned something that cost time? A memory note.
-3. Deferred something? `<DECISIONS_FILE>`.
+2. Learned something that cost time? A team lesson in `<lessons_dir>/`, one
+   line in its `INDEX.md`.
+3. Deferred something? `<decisions_file>`.
 4. Stop every server and container your session started.
 
 ## PR checklist
@@ -134,16 +141,17 @@ A feature that cannot be debugged in production is not finished.
 ```
 - [ ] Every unit the feature touches is covered (or N/A with a reason)
 - [ ] Requirement and design source read; contradictions logged and answered
-- [ ] Case written/updated in <CASES_DIR>; cases check run
+- [ ] Case written/updated in <cases_dir>; cases check run
 - [ ] Indexes, caching and job-vs-request decided
 - [ ] Contract regenerated and committed; client generated from it
 - [ ] Tests: happy path, user-facing error, isolation boundary
-- [ ] <GATE_CMD> passes
+- [ ] `node scripts/gate.mjs` passes
 - [ ] Run by hand (API script output / screenshots below)
 - [ ] Speed: index + plan, cache policy, server timing, cursor pagination
 - [ ] Migrations expand-then-contract; deployed code runs on the new schema
 - [ ] Observability: trace id reachable, context propagated, bounded metrics
 - [ ] Derived data (if any): one owner, refresh path, recompute-and-compare
-- [ ] Volume / load / leak checks, if applicable
+- [ ] Volume checks; load and leak checks (platform tier)
+- [ ] Lessons added for any trap that cost time
 - [ ] Decisions and lessons recorded
 ```

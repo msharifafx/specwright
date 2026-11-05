@@ -1,16 +1,19 @@
 {
   "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [{ "type": "command", "command": "node .claude/hooks/turn-start.mjs", "timeout": 20 }] }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
-        "hooks": [{ "type": "command", "command": ".claude/hooks/lint.sh", "timeout": 60 }]
+        "hooks": [{ "type": "command", "command": "node .claude/hooks/lint.mjs", "timeout": 60 }]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": ".claude/hooks/gate.sh", "timeout": 180 },
-          { "type": "command", "command": ".claude/hooks/hotfix.sh", "timeout": 60 }
+          { "type": "command", "command": "node .claude/hooks/gate.mjs", "timeout": 300 },
+          { "type": "command", "command": "node .claude/hooks/hotfix.mjs", "timeout": 60 }
         ]
       }
     ]

@@ -30,17 +30,17 @@ __STACK_TABLE__
 
 | Layer | What it does |
 |---|---|
-| `PostToolUse` hook | Lints every file the moment it is written |
+| `lint.mjs` (PostToolUse) | Lints every file the moment it is written; findings come back to you |
 | `.claude/rules/*.md` | Path-scoped detail that loads when matching files are touched |
-| `Stop` hook | Blocks the turn from ending while typecheck fails |
-| `__GATE_CMD__` | The PR gate; CI runs the same script |
+| `gate.mjs` (Stop) | Blocks the turn from ending while typecheck fails in a unit touched this turn, committed or not |
+| `node scripts/gate.mjs` | The PR gate, steps from `[gate]` in `.claude/specwright.ini`; CI runs the same command |
 
 What no hook enforces: the load test, the leak probe, running the feature
-yourself, and judgement about cost. Those live in `docs/feature-workflow.md`.
+yourself, and judgement about cost. Those live in `__DOCS_DIR__/feature-workflow.md`.
 
 ## Working agreement
 
-- Run `__GATE_CMD__` before declaring work done. Do not disable either hook.
+- Run `node scripts/gate.mjs` before declaring work done. Do not disable any hook.
 - Never add a lint-disable for a hard rule. If a rule is wrong, change the
   rule and its doc together, in the same PR, with the reason.
 - When a rule conflicts with what you were about to write, the rule wins. Say

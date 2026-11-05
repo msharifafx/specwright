@@ -1,6 +1,6 @@
 # The interview: what to ask, when, and how
 
-The harness is opinionated, but the project is not yours. Every project has
+Specwright is opinionated, but the project is not yours. Every project has
 answers only its people know: who decides scope, what may never break, which
 of two documents is current. Guessing those is how a fast build turns into a
 fast build of the wrong thing. This file covers how to find the questions
@@ -38,8 +38,16 @@ that need asking, and how to ask them so they get answered.
 
 ## 2. Discovery first: answer what you can yourself
 
-Run this before asking anything. For an existing project, also run
-`scripts/audit.sh <root>`, which reports which harness pieces already exist.
+Run this before asking anything. Start with
+`node <skill>/scripts/audit.mjs <root>`: it reports the layout, the manifests,
+and which Specwright pieces already exist.
+
+**Prerequisites first.** `node` (18+) and `git` must be on the PATH, and
+**graphify is required**: if `graphify` is not on the PATH or the `/graphify`
+skill is not available, stop and tell the user to run
+`uv tool install graphifyy` (or `pipx install graphifyy`) and then
+`graphify install` (`graphify install --platform windows` on Windows). Do not
+continue the setup without it.
 
 | Find out | Where to look |
 |---|---|
@@ -69,6 +77,13 @@ expensive.
 
 ### A. Scope and authority
 
+The tier is asked first, because it decides how much of the rest applies
+(`tiers.md`):
+
+| Question | Ask when | Default if unanswered |
+|---|---|---|
+| ★ How much ceremony does this project need? **Lite** — a prototype, script, small service or internal tool: instructions, hooks, gate, feature worktrees, open questions, team lessons. **Standard** — a product with real users: adds the decision log, defect tracker, feature workflow, requirements graph, path-scoped rules and cases. **Platform** — many users or tenants sharing infrastructure: adds per-session isolated stacks, multi-tenant load tests, leak probes, observability rules and the hotfix chain. | Always, once | Standard |
+
 | Question | Ask when | Default if unanswered |
 |---|---|---|
 | ★ What is the product, and who uses it (internal staff, customers, their customers)? | No source says it plainly | Ask — isolation and permission questions depend on it |
@@ -90,7 +105,7 @@ expensive.
 
 | Question | Ask when | Default |
 |---|---|---|
-| Keep the current layout, or restructure? | Existing project | **Keep it.** The harness adapts to the layout, never the reverse |
+| Keep the current layout, or restructure? | Existing project | **Keep it.** Specwright adapts to the layout, never the reverse |
 | For sibling repos with no wrapper: may we add a workspace directory above them? | Sibling layout | Recommend yes; feature worktrees need one root to mirror |
 | New project: which stack per unit? | New project with no decision | Ask; recommend what the team already runs in production |
 | Which commands are the source of truth — the manifest scripts, a Makefile, or CI? | They disagree | CI — **after checking CI can actually run** (its configs exist, its tests exist). A broken CI is a finding; ask before copying it into the gate |
@@ -149,7 +164,8 @@ Every answer is written down where the next session will find it:
 | A contradiction resolved | `open-questions.md` entry marked ANSWERED (who, when), then the requirement note or code change |
 | A choice between two readings, or a deliberate "not now" | `deferred-decisions.md` |
 | An invariant | The workspace `CLAUDE.md` invariants list, and a lint rule if one can enforce it |
-| A command or layout fact | `.claude/harness.conf` / `.claude/harness.units` |
-| A way-of-working preference | Memory (feedback note) |
+| A command, location or layout fact | `.claude/specwright.ini` |
+| A trap the team should never hit twice | A team lesson in `<lessons_dir>/`, indexed in `INDEX.md` |
+| A personal preference of one developer | That developer's personal Claude memory |
 
 An answer that lives only in the chat is re-asked next week.

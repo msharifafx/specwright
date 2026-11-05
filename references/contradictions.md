@@ -2,7 +2,7 @@
 
 A contradiction found before building costs one question. Found in UAT, it
 costs a rebuild. Found in production, it costs trust. This is the
-highest-return activity in the whole harness, so it is done deliberately, not
+highest-return activity in the whole method, so it is done deliberately, not
 noticed by accident.
 
 ## Contents
@@ -92,7 +92,7 @@ the outcome into the requirement notes, the code, or the decision log.
 Never delete an answered entry: it is the evidence for why the product
 behaves as it does.
 
-## 5. Worked examples (from the projects this harness came from)
+## 5. Worked examples (from the projects Specwright came from)
 
 **Requirement vs design.** The permission catalog named a chart "Disbursement
 by bank — share of disbursement across banks". The prototype drew

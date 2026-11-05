@@ -1,10 +1,18 @@
 # Hotfix propagation chain, most-stable FIRST. THIS FILE DOES NOTHING.
-# Copy it to .claude/hotfix-chain in a repo to arm .claude/hooks/hotfix.sh there.
+# Copy it to .claude/hotfix-chain at a git root to arm .claude/hooks/hotfix.mjs
+# for that repo (platform tier).
 #
-# The hook merges each branch into the next one down, but only commits whose
-# subject starts with `hotfix:` / `hotfix(scope):` / `hotfix!:`. A fix made on
-# release reaches every branch below it without a cherry-pick, and nothing
-# else moves. Local only: it never fetches, pushes or deploys.
+# After every turn the hook carries each branch into the next one down, but
+# only commits whose subject starts with `hotfix:` / `hotfix(scope):` /
+# `hotfix!:`. A fix made on release reaches every branch below it without a
+# cherry-pick, and nothing else moves.
+#
+# It never touches a working tree: it merges with `git merge-tree --write-tree`
+# and moves the branch ref directly. A branch that is CHECKED OUT anywhere
+# (your main checkout, a feature worktree) is not moved behind that checkout's
+# back — the hook stops there and tells you the one command to run in it.
+# A conflict stops the cascade. Local only: it never fetches, pushes or
+# deploys. Needs git 2.38+.
 #
 # DECIDE FIRST: a branch per environment is one deployment model; promoting one
 # immutable artifact dev → uat → prod from a single main branch is another.

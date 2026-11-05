@@ -1,6 +1,6 @@
 # Stacks and architectures: the same practices, different tools
 
-The practices in this harness are fixed. The tools are not. This file maps
+The practices in Specwright are fixed. The tools are not. This file maps
 each practice to its equivalent per ecosystem, and lists the invariants that
 typically come with each architecture, as a starting point for the interview.
 Prefer what the project already uses over anything here.

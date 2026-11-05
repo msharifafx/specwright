@@ -49,14 +49,15 @@ IDs defined twice, and counts SKIPs. It exits non-zero on any difference;
 put it in the gate. A failing check after a case edit is the **signal** telling
 you which scripts move — not an error to work around.
 
-The reference project holds 1,024 cases in 28 files, split into `screens/`,
+Organise case files by kind — on the reference project `screens/`,
 `journeys/`, `platform/`, `public/`.
 
 ## 3. The end-to-end suite and its traps
 
 - **Judge results in the CI-shaped environment** (a container with the same
   browser image), not on a laptop with a display server, a browser profile
-  and developer DNS. `examples/reference-project/e2e/scripts/run-in-container.sh`.
+  and developer DNS. (The reference project's container runner is listed in
+  `examples/README.md`.)
 - **Sessions cannot be saved and replayed** when refresh tokens rotate: a
   saved storage state works for one browser context, the second replays a
   revoked token and lands on sign-in. Sign in once per worker and share the
@@ -75,7 +76,7 @@ The reference project holds 1,024 cases in 28 files, split into `screens/`,
 - **Never sign in with curl as the suite's user mid-run**: it can revoke the
   suite's session and bounce every test to sign-in.
 
-## 4. Isolated stacks for test runs
+## 4. Isolated stacks for test runs (platform tier)
 
 A local stack shared by several sessions is shared state: one session's worker
 long-polls the same queue and eats another's jobs (symptom: a job that "never
@@ -93,8 +94,9 @@ pnpm e2e:verify                                        # prove it serves
 docker compose -p app-mine -f docker-compose.e2e.yml down -v   # when done
 ```
 
-Real implementation: `examples/reference-project/server/scripts/e2e-up.sh` and
-`docker-compose.e2e.yml`. Own queues per run, not just own ports.
+The reference project's implementation (one script owning the offset, a
+compose file per isolated project) is listed in `examples/README.md`. Own queues per run, not just own
+ports.
 
 ## 5. Run it yourself
 
@@ -105,9 +107,8 @@ every visual and functional defect in User Management was found by using it,
 and none by a passing test.
 
 - Keep a **one-command local stack** and a **verify script that exercises
-  behaviour**, not `ps` output (`examples/.../server/scripts/verify-local.sh`:
-  13 checks, including proving the connection pooler really is in
-  transaction mode).
+  behaviour**, not `ps` output (the reference project's proves, among other things,
+  that the connection pooler really is in transaction mode).
 - **APIs**: a curl script through happy path, each validation (does the
   message land on the right field?), the conflict, the refusal, the isolation
   boundary. Keep it; paste the output in the PR.
@@ -123,7 +124,7 @@ and none by a passing test.
   bugs (grants, catalogs, environment gates) exist only on the forward path.
   Test there too, through the same URL a user hits.
 
-## 6. Volume, load and leaks
+## 6. Volume, load and leaks (load and leaks: platform tier)
 
 - **Volume**: render lists at production size (10,000 rows), confirm
   pagination/sort/filter are server-side, one request per view change, filters
@@ -132,11 +133,11 @@ and none by a passing test.
   work, and every threshold is asserted on the **quiet** ones: p95 < 500 ms,
   errors < 1%, no capacity refusals, no sustained pool waits, no sequential
   scans on big tables. Never point a load test at a route that calls a metered
-  third party. `examples/.../server/loadtest/multi-tenant.js`.
+  third party. (Platform tier; the reference load test is in `examples/`.)
 - **Leaks**, for anything long-lived: sustained load, two heap snapshots, RSS
   growth < 50 MB over 10 minutes, and flat counts of pools, sockets and
   listeners — steady RSS with a growing socket count is still a leak.
-  `examples/.../server/scripts/leak-probe.sh`. Compare against the default
+  (Platform tier; the reference probe is in `examples/`.) Compare against the default
   branch's baseline before blaming yours.
 - Things local cannot tell you (e.g. managed-queue fairness) are verified in a
   real environment, and the docs say so.

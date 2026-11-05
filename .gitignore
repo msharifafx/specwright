@@ -1,5 +1,6 @@
-*.harness-new
+*.specwright-new
 *.bak
+.claude/.specwright/
 .DS_Store
 node_modules/
 *-workspace/
