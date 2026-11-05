@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 128" role="img" aria-label="Specwright — from spec to production, built straight">
+  <title>Specwright</title>
+  <g>
+  <rect width="128" height="128" rx="28" fill="#0E2A47"/>
+  <path d="M30 20 H74 L94 40 V104 H30 Z" fill="#F4F7FB"/>
+  <path d="M74 20 V40 H94 Z" fill="#B9CADB"/>
+  <rect x="38" y="48" width="40" height="6" rx="3" fill="#0E2A47" opacity="0.9"/>
+  <rect x="38" y="60" width="30" height="6" rx="3" fill="#0E2A47" opacity="0.55"/>
+  <rect x="38" y="72" width="24" height="6" rx="3" fill="#0E2A47" opacity="0.55"/>
+  <path d="M86 52 H100 V112 H44 V98 H86 Z" fill="#F5A524"/>
+  <g stroke="#0E2A47" stroke-width="2.5" stroke-linecap="round" opacity="0.85">
+    <path d="M93 60 V66"/><path d="M93 72 V76"/><path d="M93 82 V88"/><path d="M93 94 V98"/>
+    <path d="M54 105 H58"/><path d="M64 105 H70"/><path d="M76 105 H80"/>
+  </g>
+  </g>
+  <text x="152" y="72" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="-1" fill="#0E2A47">Specwright</text>
+  <text x="154" y="104" font-family="Inter, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="20" font-weight="500" fill="#4A6077">From spec to production, built straight.</text>
+</svg>

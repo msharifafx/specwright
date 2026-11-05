@@ -1,8 +1,15 @@
-# Specwright
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+    <img src="assets/logo-light.svg" alt="Specwright — from spec to production, built straight." width="560">
+  </picture>
+</p>
 
-*From spec to production, built straight.*
-
-[![selftest](https://github.com/msharifafx/specwright/actions/workflows/selftest.yml/badge.svg)](https://github.com/msharifafx/specwright/actions/workflows/selftest.yml)
+<p align="center">
+  <a href="https://github.com/msharifafx/specwright/actions/workflows/selftest.yml"><img src="https://github.com/msharifafx/specwright/actions/workflows/selftest.yml/badge.svg" alt="selftest"></a>
+  <a href="https://github.com/msharifafx/specwright/releases/latest"><img src="https://img.shields.io/github/v/release/msharifafx/specwright" alt="release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
+</p>
 
 Specwright is a [Claude Code](https://claude.com/claude-code) skill for
 delivering software with a coding agent, fast and without the mess. It sets
