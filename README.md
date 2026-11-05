@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
-    <img src="assets/logo-light.svg" alt="Specwright — from spec to production, built straight." width="560">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/msharifafx/specwright/main/assets/logo-dark.svg">
+    <img src="https://raw.githubusercontent.com/msharifafx/specwright/main/assets/logo-light.svg" alt="Specwright — from spec to production, built straight." width="560">
   </picture>
 </p>
 
